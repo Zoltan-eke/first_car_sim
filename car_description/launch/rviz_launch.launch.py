@@ -8,13 +8,14 @@ from launch_ros.parameter_descriptions import ParameterValue
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 
+
 def generate_launch_description():
     # Specify the name of the package and path to xacro file within the package
     pkg_name = 'car_description'
     urdf_file = os.path.join(get_package_share_directory(pkg_name), 'urdf', 'base_link.xacro')
     rviz_config_file = os.path.join(get_package_share_directory(pkg_name), 'rviz', 'racecar.rviz')
-    controller_params_file = os.path.join(get_package_share_directory(pkg_name),'config','ackermann_control.yaml')
-    robot_params_file = os.path.join(get_package_share_directory(pkg_name),'config','car_params.yaml')
+    controller_params_file = os.path.join(get_package_share_directory(pkg_name), 'config', 'ackermann_control.yaml')
+    robot_params_file = os.path.join(get_package_share_directory(pkg_name), 'config', 'car_params.yaml')
 
     # --- Paraméterek definiálása (LaunchConfiguration) ---
     #  Ezek most *opcionálisak*, mert az alapértelmezett értékek a car_params.yaml-ben vannak.
@@ -85,15 +86,17 @@ def generate_launch_description():
         parameters=[controller_params_file,  # Általános konfiguráció
                     robot_params_file,     # Robot-specifikus paraméterek
                     #{'robot_description': robot_description}
-                    ], # Robot leírás
+                    ],  # Robot leírás
+        remappings=[
+            ("~/robot_description", "/robot_description"), ],
         output="screen",
     )
 
     # Késleltetett indítás, hogy a controller_manager biztosan fusson, mielőtt a spawner-ek elindulnak.
     # Ez NEM a legjobb megoldás (jobb lenne condition-t használni), de a legegyszerűbb.
-    delay_for_spawners =  ExecuteProcess(
-            cmd=['sleep', '5'],
-            output='screen'
+    delay_for_spawners = ExecuteProcess(
+        cmd=['sleep', '5'],
+        output='screen'
     )
 
     ackermann_steering_spawner = Node(
@@ -124,19 +127,19 @@ def generate_launch_description():
             {'scale_angular.z': 0.5},
         ]
     )
-    
-    delayed_ackermann_steering_spawner =  RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=delay_for_spawners,
-                on_exit=[ackermann_steering_spawner],
-            )
+
+    delayed_ackermann_steering_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=delay_for_spawners,
+            on_exit=[ackermann_steering_spawner],
         )
-    delayed_joint_broadcaster_spawner =  RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=delay_for_spawners,
-                on_exit=[joint_broadcaster_spawner],
-            )
+    )
+    delayed_joint_broadcaster_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=delay_for_spawners,
+            on_exit=[joint_broadcaster_spawner],
         )
+    )
 
     return LaunchDescription([
         wheel_radius_arg,         # Ezek most már opcionálisak!
