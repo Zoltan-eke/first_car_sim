@@ -2,16 +2,20 @@ controller_manager:
   ros__parameters:
     update_rate: 100 # Vezérlési frekvencia
 
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
     ackermann_steering_controller:
       type: ackermann_steering_controller/AckermannSteeringController
 
 ackermann_steering_controller:
   ros__parameters:
-    front_steering_left_joint: left_steering_hinge_joint  # A csuklók nevei (URDF-ből)
-    front_steering_right_joint: right_steering_hinge_joint
-    rear_wheel_left_joint: left_rear_wheel_joint
-    rear_wheel_right_joint: right_rear_wheel_joint
-    wheel_separation: $(params.wheel_separation)  # Paraméter a másik YAML-ből
-    wheelbase: $(params.wheelbase)                # Paraméter a másik YAML-ből
-    wheel_radius: $(params.wheel_radius)          # Paraméter a másik YAML-ből
+    use_stamped_vel: true
+    front_wheels_names: [right_steering_hinge_joint, left_steering_hinge_joint]  # A csuklók nevei (URDF-ből)
+    rear_wheels_names: [right_rear_wheel_joint, left_rear_wheel_joint]
+    front_wheel_track: 0.32
+    rear_wheel_track: 0.32
+    wheelbase: 0.235
+    front_wheels_radius: 0.05
+    rear_wheels_radius: 0.05
 
